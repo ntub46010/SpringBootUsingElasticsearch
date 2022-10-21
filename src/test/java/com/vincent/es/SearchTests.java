@@ -3,6 +3,7 @@ package com.vincent.es;
 import co.elastic.clients.elasticsearch._types.SortMode;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.FieldValueFactorModifier;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchAllQuery;
 import com.vincent.es.entity.Student;
 import com.vincent.es.repository.StudentEsRepository;
@@ -34,11 +35,12 @@ public class SearchTests {
     private StudentEsRepository repository;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws IOException, InterruptedException {
         repository.init();
 
         var documents = SampleData.get();
         repository.insert(documents);
+        Thread.sleep(2000);
     }
 
     @Test
@@ -138,17 +140,104 @@ public class SearchTests {
         assertDocumentIds(false, students, "101", "102");
     }
 
+    @Test
+    public void testFunctionScore_FieldValueFactor() {
+        var fieldValueFactorScore = SearchUtils
+                .createFieldValueFactor("grade", 0.5, FieldValueFactorModifier.Square, 0.0);
+
+        var searchInfo = new SearchInfo();
+        searchInfo.setFunctionScores(List.of(fieldValueFactorScore));
+
+        var students = repository.find(searchInfo);
+
+        // Dora (4.0) -> Mario (2.25) -> Vincent (1.0) -> Winnie (0.25)
+        assertDocumentIds(students, "101", "102", "103", "104");
+    }
+
+    @Test
+    public void testFunctionScore_ConditionalWeight() {
+        var departmentQuery = SearchUtils
+                .createTermQuery("departments.keyword", "財務金融");
+        var departmentScore = SearchUtils
+                .createConditionalWeightFunctionScore(departmentQuery, 3.0);
+
+        var courseQuery = SearchUtils
+                .createTermQuery("courses.name.keyword", "程式設計");
+        var courseScore = SearchUtils
+                .createConditionalWeightFunctionScore(courseQuery, 1.5);
+
+        var fieldValueFactorScore = SearchUtils
+                .createFieldValueFactor("grade", 1.0, FieldValueFactorModifier.None, 0.0);
+        var gradeScore = SearchUtils
+                .createWeightedFieldValueFactor(fieldValueFactorScore.fieldValueFactor(), 0.5);
+
+        var searchInfo = new SearchInfo();
+        searchInfo.setFunctionScores(List.of(
+                departmentScore,
+                courseScore,
+                gradeScore
+        ));
+
+        var students = repository.find(searchInfo);
+
+        // Vincent (5.5) -> Dora (5.0) -> Mario (1.5) -> Winnie (0.5)
+        assertDocumentIds(students, "103", "101", "102", "104");
+    }
+
+    @Test
+    public void testFunctionScore_DecayFunction_Number() {
+        var placement = SearchUtils
+                .createDecayPlacement(100, 15, 10, 0.5);
+        var decayFunctionScore = SearchUtils
+                .createGaussFunction("conductScore", placement);
+
+        var searchInfo = new SearchInfo();
+        searchInfo.setFunctionScores(List.of(decayFunctionScore));
+
+        var students = repository.find(searchInfo);
+
+        // Vincent (1.0) -> Mario (0.9726) -> Dora (0.4322) -> Winnie (0.2570)
+        assertDocumentIds(students, "103", "102", "101", "104");
+    }
+
+    @Test
+    public void testFunctionScore_DecayFunction_Date() {
+        var placement = SearchUtils
+                .createDecayPlacement("now", "90d", "270d", 0.5);
+        var decayFunctionScore = SearchUtils
+                .createGaussFunction("englishIssuedDate", placement);
+
+        var searchInfo = new SearchInfo();
+        searchInfo.setFunctionScores(List.of(decayFunctionScore));
+
+        var students = repository.find(searchInfo);
+
+        // Mario -> Winnie -> Dora -> Vincent
+        assertDocumentIds(students, "102", "104", "101", "103");
+    }
+
     private void assertDocumentIds(boolean ignoreOrder, List<Student> actualDocs, String... expectedIdArray) {
+        if (!ignoreOrder) {
+            assertDocumentIds(actualDocs, expectedIdArray);
+            return;
+        }
+
         var expectedIds = List.of(expectedIdArray);
         var actualIds = actualDocs.stream()
                 .map(Student::getId)
                 .collect(Collectors.toList());
 
-        if (ignoreOrder) {
-            assertTrue(expectedIds.containsAll(actualIds));
-            assertTrue(actualIds.containsAll(expectedIds));
-        } else {
-            assertEquals(expectedIds, actualIds);
-        }
+        assertTrue(expectedIds.containsAll(actualIds));
+        assertTrue(actualIds.containsAll(expectedIds));
     }
+
+    private void assertDocumentIds(List<Student> actualDocs, String... expectedIdArray) {
+        var expectedIds = List.of(expectedIdArray);
+        var actualIds = actualDocs.stream()
+                .map(Student::getId)
+                .collect(Collectors.toList());
+
+        assertEquals(expectedIds, actualIds);
+    }
+
 }

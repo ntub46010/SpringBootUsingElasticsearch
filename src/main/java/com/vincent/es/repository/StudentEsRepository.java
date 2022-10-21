@@ -127,7 +127,7 @@ public class StudentEsRepository {
     public List<Student> find(SearchInfo info) {
         var request = new SearchRequest.Builder()
                 .index(indexName)
-                .query(info.getBoolQuery()._toQuery())
+                .query(info.toQuery())
                 .sort(info.getSortOptions())
                 .from(info.getFrom())
                 .size(info.getSize())
