@@ -157,7 +157,7 @@ public class StudentEsRepository {
         try {
             return supplier.get();
         } catch (IOException e) {
-            // 範例為求簡便，只包裝成 RuntimeException
+            // 範例為求方便，只簡單做例外處理
             throw new RuntimeException(e);
         }
     }
