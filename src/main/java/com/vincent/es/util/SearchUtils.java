@@ -17,7 +17,7 @@ public class SearchUtils {
      * <pre>
      *     {
      *         "term": {
-     *             "{field}": {value}
+     *             "{@param field}": {@param value}
      *         }
      *     }
      * </pre>
@@ -43,7 +43,10 @@ public class SearchUtils {
      * <pre>
      *     {
      *         "terms": {
-     *             "{field}": [{values}[0], {values}[1], ...]
+     *             "{@param field}": [
+     *                 {@param values[0]},
+     *                 {@param values[1]}, ...
+     *             ]
      *         }
      *     }
      * </pre>
@@ -56,7 +59,6 @@ public class SearchUtils {
             fieldValueStream = values.stream()
                     .map(value -> FieldValue.of(b -> b.longValue((int) value)));
         } else if (elem instanceof String) {
-            field = field + ".keyword";
             fieldValueStream = values.stream()
                     .map(value -> FieldValue.of(b -> b.stringValue((String) value)));
         } else {
@@ -77,9 +79,9 @@ public class SearchUtils {
      * <pre>
      *     {
      *         "range": {
-     *             "{field}": {
-     *                 "gte": "{gte}",
-     *                 "lte": "{lte}"
+     *             "{@param field}": {
+     *                 "gte": "{@param gte}",
+     *                 "lte": "{@param lte}"
      *             }
      *         }
      *     }
@@ -119,11 +121,15 @@ public class SearchUtils {
      *         "bool": {
      *             "should": [
      *                 {
-     *                     "match": { "{fields}[0]": "{searchText}" }
+     *                     "match": {
+     *                         "{@param fields[0]}": "{@param searchText}"
+     *                     }
      *                 },
      *                 {
-     *                     "match": { "{fields}[1]": "{searchText}" }
-     *                 }
+     *                     "match": {
+     *                         "{@param fields[1]}": "{@param searchText}"
+     *                     }
+     *                 }, ...
      *             ]
      *         }
      *     }
@@ -144,6 +150,16 @@ public class SearchUtils {
         return bool.build()._toQuery();
     }
 
+    /**
+     * <pre>
+     *     {
+     *         "{@param field}": {
+     *             "order": {@param order},
+     *             "mode": {@param mode}
+     *         }
+     *     }
+     * </pre>
+     */
     public static SortOptions createSortOption(String field, SortOrder order, SortMode mode) {
         var fieldSort = new FieldSort.Builder()
                 .field(field)

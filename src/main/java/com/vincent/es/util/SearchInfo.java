@@ -7,10 +7,10 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import java.util.List;
 
 public class SearchInfo {
-    private BoolQuery boolQuery;
-    private List<SortOptions> sortOptions;
-    private Integer from;
-    private Integer size;
+    private BoolQuery boolQuery;           // 查詢條件
+    private List<SortOptions> sortOptions; // 排序方式
+    private Integer from;                  // 資料的跳過數量
+    private Integer size;                  // 資料的擷取數量
 
     public static SearchInfo of(BoolQuery bool) {
         var info = new SearchInfo();
@@ -54,5 +54,10 @@ public class SearchInfo {
 
     public void setSize(Integer size) {
         this.size = size;
+    }
+
+    // library 使用 Query 類別當作條件的傳遞介面
+    public Query toQuery() {
+        return boolQuery._toQuery();
     }
 }
