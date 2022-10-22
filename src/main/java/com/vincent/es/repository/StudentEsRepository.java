@@ -123,7 +123,6 @@ public class StudentEsRepository {
         execute(() -> client.delete(request));
     }
 
-    @SuppressWarnings({"squid:S112"})
     public List<Student> find(SearchInfo info) {
         var request = new SearchRequest.Builder()
                 .index(indexName)
@@ -133,7 +132,7 @@ public class StudentEsRepository {
                 .size(info.getSize())
                 .build();
 
-        try {
+        return execute(() -> {
             var searchResponse = client.search(request, Student.class);
             return searchResponse
                     .hits()
@@ -141,10 +140,7 @@ public class StudentEsRepository {
                     .stream()
                     .map(Hit::source)
                     .collect(Collectors.toList());
-        } catch (IOException e) {
-            // 範例為求方便，只簡單做例外處理
-            throw new RuntimeException(e);
-        }
+        });
     }
 
     private Map<String, Property> getPropertyMappings() {
@@ -157,7 +153,7 @@ public class StudentEsRepository {
         try {
             return supplier.get();
         } catch (IOException e) {
-            // 範例為求簡便，只包裝成 RuntimeException
+            // 範例為求方便，只簡單做例外處理
             throw new RuntimeException(e);
         }
     }

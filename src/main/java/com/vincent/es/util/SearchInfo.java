@@ -7,11 +7,11 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 
 public class SearchInfo {
-    private BoolQuery boolQuery;
-    private List<FunctionScore> functionScores = List.of();
-    private List<SortOptions> sortOptions = List.of();
-    private Integer from;
-    private Integer size;
+    private BoolQuery boolQuery;                            // 查詢條件
+    private List<FunctionScore> functionScores = List.of(); // 計分函數
+    private List<SortOptions> sortOptions;                  // 排序方式
+    private Integer from;                                   // 資料的跳過數量
+    private Integer size;                                   // 資料的擷取數量
 
     public SearchInfo() {
         var matchAll = MatchAllQuery.of(b -> b)._toQuery();
@@ -70,6 +70,7 @@ public class SearchInfo {
         this.size = size;
     }
 
+    // library 使用 Query 類別當作條件的傳遞介面
     public Query toQuery() {
         if (CollectionUtils.isEmpty(functionScores)) {
             return boolQuery._toQuery();

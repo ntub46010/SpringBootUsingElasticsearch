@@ -121,11 +121,15 @@ public class SearchUtils {
      *         "bool": {
      *             "should": [
      *                 {
-     *                     "match": { "{@param fields[0]}": "{@param searchText}" }
+     *                     "match": {
+     *                         "{@param fields[0]}": "{@param searchText}"
+     *                     }
      *                 },
      *                 {
-     *                     "match": { "{@param fields[1]}": "{@param searchText}" }
-     *                 }
+     *                     "match": {
+     *                         "{@param fields[1]}": "{@param searchText}"
+     *                     }
+     *                 }, ...
      *             ]
      *         }
      *     }
@@ -146,6 +150,16 @@ public class SearchUtils {
         return bool.build()._toQuery();
     }
 
+    /**
+     * <pre>
+     *     {
+     *         "{@param field}": {
+     *             "order": {@param order},
+     *             "mode": {@param mode}
+     *         }
+     *     }
+     * </pre>
+     */
     public static SortOptions createSortOption(String field, SortOrder order, SortMode mode) {
         var fieldSort = new FieldSort.Builder()
                 .field(field)

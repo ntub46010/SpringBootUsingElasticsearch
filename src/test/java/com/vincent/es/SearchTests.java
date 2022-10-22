@@ -11,7 +11,7 @@ import com.vincent.es.util.SampleData;
 import com.vincent.es.util.SearchInfo;
 import com.vincent.es.util.SearchUtils;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +34,7 @@ public class SearchTests {
     @Autowired
     private StudentEsRepository repository;
 
+    @SuppressWarnings({"squid:S2925"})
     @Before
     public void setup() throws IOException, InterruptedException {
         repository.init();
