@@ -108,6 +108,28 @@ public class SearchTests {
     }
 
     @Test
+    public void testTextFieldExists() {
+        var query = SearchUtils.createFieldExistsQuery("bloodType");
+        var searchInfo = SearchInfo.of(query);
+
+        var students = repository.find(searchInfo);
+
+        // Dora, Mario, Vincent
+        assertDocumentIds(true, students, "101", "102", "103");
+    }
+
+    @Test
+    public void testTextArrayFieldExists() {
+        var query = SearchUtils.createFieldExistsQuery("phoneNumbers");
+        var searchInfo = SearchInfo.of(query);
+
+        var students = repository.find(searchInfo);
+
+        // Dora, Vincent
+        assertDocumentIds(true, students, "101", "103");
+    }
+
+    @Test
     public void testSortByMultipleFields() {
         var coursePointSort = SearchUtils.createSortOption("courses.point", SortOrder.Desc, SortMode.Max);
         var nameSort = SearchUtils.createSortOption("name.keyword", SortOrder.Asc);

@@ -7,10 +7,10 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import java.util.List;
 
 public class SearchInfo {
-    private BoolQuery boolQuery;           // 查詢條件
-    private List<SortOptions> sortOptions; // 排序方式
-    private Integer from;                  // 資料的跳過數量
-    private Integer size;                  // 資料的擷取數量
+    private BoolQuery boolQuery;                       // 查詢條件
+    private List<SortOptions> sortOptions = List.of(); // 排序方式
+    private Integer from;                              // 資料的跳過數量
+    private Integer size;                              // 資料的擷取數量
 
     public static SearchInfo of(BoolQuery bool) {
         var info = new SearchInfo();
