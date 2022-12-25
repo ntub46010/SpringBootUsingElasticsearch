@@ -4,15 +4,17 @@ import java.util.Date;
 import java.util.List;
 
 public class Student {
-    private String id;                // 學生編號，可當作 document id
-    private String name;              // 姓名
-    private List<String> departments; // 科系
-    private List<Course> courses;     // 修習課程
-    private int grade;                // 年級
-    private int conductScore;         // 操行成績
-    private Job job;                  // 職務
-    private String introduction;      // 自我介紹
-    private Date englishIssuedDate;   // 英文檢定通過日
+    private String id;                 // 學生編號，可當作 document id
+    private String name;               // 姓名
+    private List<String> departments;  // 科系
+    private List<Course> courses;      // 修習課程
+    private int grade;                 // 年級
+    private int conductScore;          // 操行成績
+    private Job job;                   // 職務
+    private String introduction;       // 自我介紹
+    private Date englishIssuedDate;    // 英文檢定通過日
+    private String bloodType;          // 血型
+    private List<String> phoneNumbers; // 電話號碼
 
     public String getId() {
         return id;
@@ -84,5 +86,21 @@ public class Student {
 
     public void setEnglishIssuedDate(Date englishIssuedDate) {
         this.englishIssuedDate = englishIssuedDate;
+    }
+
+    public String getBloodType() {
+        return bloodType;
+    }
+
+    public void setBloodType(String bloodType) {
+        this.bloodType = bloodType;
+    }
+
+    public List<String> getPhoneNumbers() {
+        return phoneNumbers;
+    }
+
+    public void setPhoneNumbers(List<String> phoneNumbers) {
+        this.phoneNumbers = phoneNumbers;
     }
 }
