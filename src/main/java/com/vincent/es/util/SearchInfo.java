@@ -9,7 +9,7 @@ import java.util.List;
 public class SearchInfo {
     private BoolQuery boolQuery;                            // 查詢條件
     private List<FunctionScore> functionScores = List.of(); // 計分函數
-    private List<SortOptions> sortOptions;                  // 排序方式
+    private List<SortOptions> sortOptions = List.of();      // 排序方式
     private Integer from;                                   // 資料的跳過數量
     private Integer size;                                   // 資料的擷取數量
 

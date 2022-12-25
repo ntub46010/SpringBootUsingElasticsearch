@@ -153,6 +153,22 @@ public class SearchUtils {
     /**
      * <pre>
      *     {
+     *         "exists": {
+     *             "field": {@param field}
+     *         }
+     *     }
+     * </pre>
+     */
+    public static Query createFieldExistsQuery(String field) {
+        return new ExistsQuery.Builder()
+                .field(field)
+                .build()
+                ._toQuery();
+    }
+
+    /**
+     * <pre>
+     *     {
      *         "{@param field}": {
      *             "order": {@param order},
      *             "mode": {@param mode}
