@@ -8,15 +8,18 @@ import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.elasticsearch.core.bulk.CreateOperation;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import com.vincent.es.entity.Student;
 import com.vincent.es.util.IOSupplier;
+import com.vincent.es.util.SearchInfo;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class StudentEsRepository {
     private final ElasticsearchClient client;
@@ -118,6 +121,26 @@ public class StudentEsRepository {
                 .build();
 
         execute(() -> client.delete(request));
+    }
+
+    public List<Student> find(SearchInfo info) {
+        var request = new SearchRequest.Builder()
+                .index(indexName)
+                .query(info.toQuery())
+                .sort(info.getSortOptions())
+                .from(info.getFrom())
+                .size(info.getSize())
+                .build();
+
+        return execute(() -> {
+            var searchResponse = client.search(request, Student.class);
+            return searchResponse
+                    .hits()
+                    .hits()
+                    .stream()
+                    .map(Hit::source)
+                    .collect(Collectors.toList());
+        });
     }
 
     private Map<String, Property> getPropertyMappings() {
