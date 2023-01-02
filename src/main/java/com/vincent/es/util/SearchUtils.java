@@ -30,7 +30,7 @@ public class SearchUtils {
                     .value((int) value); // 此方法接受 long 型態
         } else if (value instanceof String){
             builder
-                    .field(field + ".keyword")
+                    .field(field)
                     .value((String) value);
         } else {
             throw new UnsupportedOperationException("Please implement for other type additionally.");
@@ -187,5 +187,110 @@ public class SearchUtils {
 
     public static SortOptions createSortOption(String field, SortOrder order) {
         return createSortOption(field, order, null);
+    }
+
+    /**
+     * <pre>
+     *     {
+     *         "field_value_factor": {
+     *             "field": {@param field},
+     *             "factor": {@param factor},
+     *             "modifier": {@param modifier},
+     *             "missing": {@param missing}
+     *         }
+     *     }
+     * </pre>
+     */
+    public static FunctionScore createFieldValueFactor(
+            String field, Double factor, FieldValueFactorModifier modifier, Double missing) {
+
+        return new FieldValueFactorScoreFunction.Builder()
+                .field(field)
+                .factor(factor)
+                .modifier(modifier)
+                .missing(missing)
+                .build()
+                ._toFunctionScore();
+    }
+
+    /**
+     * <pre>
+     *     {
+     *         "filter": {@param query},
+     *         "weight": {@param weight}
+     *     }
+     * </pre>
+     */
+    public static FunctionScore createConditionalWeightFunctionScore(Query query, Double weight) {
+        return new FunctionScore.Builder()
+                .filter(query)
+                .weight(weight)
+                .build();
+    }
+
+    /**
+     * <pre>
+     *     {
+     *         "field_value_factor": {@param function},
+     *         "weight": {@param weight}
+     *     }
+     * </pre>
+     */
+    public static FunctionScore createWeightedFieldValueFactor(
+            FieldValueFactorScoreFunction function, Double weight) {
+
+        return new FunctionScore.Builder()
+                .fieldValueFactor(function)
+                .weight(weight)
+                .build();
+    }
+
+    /**
+     * <pre>
+     *     {
+     *         "gauss": {@param placement}
+     *     }
+     * </pre>
+     */
+    public static FunctionScore createGaussFunction(String field, DecayPlacement placement) {
+        var decayFunction = new DecayFunction.Builder()
+                .field(field)
+                .placement(placement)
+                .build();
+        return new FunctionScore.Builder()
+                .gauss(decayFunction)
+                .build();
+    }
+
+    /**
+     * <pre>
+     *     {
+     *         "origin": {@param origin},
+     *         "offset": {@param offset},
+     *         "scale": {@param scale},
+     *         "decay": {@param decay}
+     *     }
+     * </pre>
+     */
+    public static DecayPlacement createDecayPlacement(
+            Number origin, Number offset, Number scale, Double decay) {
+
+        return new DecayPlacement.Builder()
+                .origin(JsonData.of(origin))
+                .offset(JsonData.of(offset))
+                .scale(JsonData.of(scale))
+                .decay(decay)
+                .build();
+    }
+
+    public static DecayPlacement createDecayPlacement(
+            String originExp, String offsetExp, String scaleExp, Double decay) {
+
+        return new DecayPlacement.Builder()
+                .origin(JsonData.of(originExp))
+                .offset(JsonData.of(offsetExp))
+                .scale(JsonData.of(scaleExp))
+                .decay(decay)
+                .build();
     }
 }

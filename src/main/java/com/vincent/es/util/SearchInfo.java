@@ -1,16 +1,22 @@
 package com.vincent.es.util;
 
 import co.elastic.clients.elasticsearch._types.SortOptions;
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
 public class SearchInfo {
-    private BoolQuery boolQuery;                       // 查詢條件
-    private List<SortOptions> sortOptions = List.of(); // 排序方式
-    private Integer from;                              // 資料的跳過數量
-    private Integer size;                              // 資料的擷取數量
+    private BoolQuery boolQuery;                            // 查詢條件
+    private List<FunctionScore> functionScores = List.of(); // 計分函數
+    private List<SortOptions> sortOptions = List.of();      // 排序方式
+    private Integer from;                                   // 資料的跳過數量
+    private Integer size;                                   // 資料的擷取數量
+
+    public SearchInfo() {
+        var matchAll = MatchAllQuery.of(b -> b)._toQuery();
+        this.boolQuery = BoolQuery.of(b -> b.filter(matchAll));
+    }
 
     public static SearchInfo of(BoolQuery bool) {
         var info = new SearchInfo();
@@ -30,6 +36,14 @@ public class SearchInfo {
 
     public void setBoolQuery(BoolQuery boolQuery) {
         this.boolQuery = boolQuery;
+    }
+
+    public List<FunctionScore> getFunctionScores() {
+        return functionScores;
+    }
+
+    public void setFunctionScores(List<FunctionScore> functionScores) {
+        this.functionScores = functionScores;
     }
 
     public List<SortOptions> getSortOptions() {
@@ -58,6 +72,17 @@ public class SearchInfo {
 
     // library 使用 Query 類別當作條件的傳遞介面
     public Query toQuery() {
-        return boolQuery._toQuery();
+        if (CollectionUtils.isEmpty(functionScores)) {
+            return boolQuery._toQuery();
+        }
+
+        return new FunctionScoreQuery.Builder()
+                .query(boolQuery._toQuery())
+                .functions(functionScores)
+                .scoreMode(FunctionScoreMode.Sum)
+                .boostMode(FunctionBoostMode.Replace)
+                .maxBoost(30.0)
+                .build()
+                ._toQuery();
     }
 }
